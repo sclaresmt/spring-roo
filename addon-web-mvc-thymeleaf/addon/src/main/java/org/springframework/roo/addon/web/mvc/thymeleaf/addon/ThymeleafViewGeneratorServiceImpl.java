@@ -1,17 +1,11 @@
 package org.springframework.roo.addon.web.mvc.thymeleaf.addon;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
@@ -36,6 +30,14 @@ import org.springframework.roo.model.RooJavaType;
 import org.springframework.roo.project.Path;
 import org.springframework.roo.project.PathResolver;
 import org.springframework.roo.settings.project.ProjectSettingsService;
+import org.springframework.roo.support.util.XmlRoundTripUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -153,11 +155,12 @@ public class ThymeleafViewGeneratorServiceImpl extends
 
     for (Element element : elementsUserManaged) {
 
-      // Check if element is child any of the other elements added
+      // Check if element is child of any of the other elements added
       boolean isChildElement = false;
       for (Element topMostElement : topMostElements) {
         if (StringUtils.isNotBlank(element.id())
-            && topMostElement.getElementById(element.id()) != null) {
+            && topMostElement.getElementById(element.id()) != null
+            && !element.id().equals(topMostElement.id())) {
           isChildElement = true;
           break;
         }
@@ -197,7 +200,14 @@ public class ThymeleafViewGeneratorServiceImpl extends
     ctx.addExtraParameter("userManagedComponents", mergeStructure(loadExistingDoc));
     ctx.addExtraParameter("fields", fields);
     Document newDoc = process(templateName, ctx);
-    return newDoc;
+
+    // Merge existing document with new document
+    W3CDom jsoupHelper = new W3CDom();
+    String mergedContent =
+        jsoupHelper.asString(XmlRoundTripUtils.compareAndReturnMergedDocument(
+            jsoupHelper.fromJsoup(loadExistingDoc), jsoupHelper.fromJsoup(newDoc), true));
+
+    return Jsoup.parse(mergedContent);
   }
 
   @Override
