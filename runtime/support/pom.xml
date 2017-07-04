@@ -49,6 +49,11 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
+        <!-- JSOUP Dependency -->
+        <dependency>
+            <groupId>org.springframework.roo.wrapping</groupId>
+            <artifactId>org.springframework.roo.wrapping.jsoup</artifactId>
+        </dependency>
     </dependencies>
     
     <build>
